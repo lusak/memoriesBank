@@ -2,11 +2,14 @@ pragma solidity ^0.4.19;
 
 
 contract MemoriesBankFactory {
+    event MemoriesBankCreated(address newMemoriesBankAddress);
+    
     mapping(address => address) ownerToMemoriesBank;
     
     function createMemoriesBank() public {
         address newMemoriesBank = new MemoriesBank(msg.sender);
         ownerToMemoriesBank[msg.sender] = newMemoriesBank;
+        MemoriesBankCreated(newMemoriesBank);
     }
     
     function getSenderMemoriesBank() public view returns(address) {

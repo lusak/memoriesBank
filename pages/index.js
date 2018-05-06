@@ -5,7 +5,6 @@ import factory from '../ethereum/factory';
 import web3 from '../ethereum/web3';
 import { Router } from '../routes';
 
-
 class MemoriesBankIndex extends Component {
   state = {
     errorMessage: '',
@@ -17,7 +16,6 @@ class MemoriesBankIndex extends Component {
     loading: false
   }
 
-
   createAccount = async (event) => {
     event.preventDefault();
 
@@ -26,12 +24,12 @@ class MemoriesBankIndex extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
 
-      let accountAddress = await factory.methods.getSenderMemoriesBank().call({
+      const accountAddress = await factory.methods.getSenderMemoriesBank().call({
         from: accounts[0]
       });
 
       if (accountAddress!=='0x0000000000000000000000000000000000000000') {
-        this.setState({errorMessage: 'You already have an account. We displayed it for you below', 
+        this.setState({errorMessage: 'You already have an account. We displayed its address for you below', 
                         accountAddress: accountAddress, accountAddressVisible: 'visible', 
                         errorMessageVisible: 'visible'});
         return
@@ -39,21 +37,27 @@ class MemoriesBankIndex extends Component {
 
       this.setState({loading: true});
 
-      await factory.methods.createMemoriesBank().send({
+      const transaction = await factory.methods.createMemoriesBank().send({
         from: accounts[0]
       });
 
-
-      this.setState({ accountAddress: accountAddress, accountAddressVisible: 'visible', createMessageVisible: 'visible'})
+      const memoriesBankAddress = transaction.events.MemoriesBankCreated.returnValues.newMemoriesBankAddress;
       
+      this.setState({ accountAddress: memoriesBankAddress, accountAddressVisible: 'visible', createMessageVisible: 'visible'});
+
     } catch (err) {
       this.setState({errorMessage: err.message, errorMessageVisible: 'visible'});
     }
-    this.setState({ loading: false });
 
+    this.setState({ loading: false });
+  }
+
+  showUserBank = () => {
+    Router.pushRoute('/memories/show')
   }
 
   render() {
+    
     return (
       <Layout title="Welcome to Memories Bank">
         <Grid>
@@ -83,8 +87,8 @@ class MemoriesBankIndex extends Component {
                   <Input size="large" placeholder='Your Account address'/>
                 </Card.Content>
                 <Card.Content>
-                  <Button color="blue" >
-                    Go
+                  <Button color="blue" onClick={this.showUserBank}>
+                      Go
                   </Button>
                 </Card.Content>
               </Card>
