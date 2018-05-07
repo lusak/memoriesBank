@@ -5,11 +5,13 @@ import _ from 'lodash';
 import factory from '../../ethereum/factory';
 import MemoriesBank from '../../ethereum/memoriesBank';
 import web3 from '../../ethereum/web3';
+import { Router } from '../../routes';
 
 class NewMemory extends Component {
   state = {
     dateErrorMessageVisible: 'hidden',
     descriptionErrorMessageVisible: 'hidden',
+    transactionErrorMessageVisible: 'hidden',
     dateErrorMessage: '',
     descriptionErrorMessage: '',
     description: '',
@@ -30,15 +32,15 @@ class NewMemory extends Component {
       return false;
     }  
     const dateArray = dateString.split("-");
-    const crazyDateFormat = new Date(dateArray[2], dateArray[1] - 1, dateArray[0]);
-    if(!crazyDateFormat.getTime() && crazyDateFormat.getTime() !== 0) {
+    const crazyDateFormat = dateArray[1].concat('-').concat(dateArray[0]).concat('-').concat(dateArray[2]);
+    const crazyDate = new Date(crazyDateFormat);
+    if(!crazyDate.getTime() && crazyDate.getTime() !== 0) {
       this.setState({ dateErrorMessage: 'Invalid Date', dateErrorMessageVisible: 'visible'});
       return false;
     } 
     const orderedDateFormat = dateArray[2].concat(dateArray[1]).concat(dateArray[0]);
     this.setState({dateErrorMessageVisible: 'hidden'}); 
     return orderedDateFormat;
-
   }
 
   createNewMemory = async (orderedDate) => {
@@ -50,31 +52,22 @@ class NewMemory extends Component {
         from: accounts[0]
       });
 
-      console.log('Address banku');
-      console.log(memoriesBankAddress);
-
       const memoriesBank = MemoriesBank(memoriesBankAddress);
 
-      console.log(memoriesBank);
-
-      const tx = await memoriesBank.methods.addMemory(orderedDate, this.state.description, 1).send({
+      const tx = await memoriesBank.methods.addMemory(orderedDate, this.state.description, this.state.memoryType).send({
         from: accounts[0]
       });
-
-      console.log('Transakcja');
-      console.log(tx);
-
-      // Router.pushRoute('/memories/show');
-      
     } catch (err) {
-      console.log(err);
+      this.setState({transactionErrorMessageVisible: 'visible'});
     }
     this.setState({ loading: false });
+    Router.pushRoute('/memories/show');
   } 
 
   onSubmit = () => {
-    
+    this.setState({transactionErrorMessageVisible: 'hidden'});
     const orderedDate = this.checkDateInput();
+    console.log(orderedDate);
     if(orderedDate===false) return;
     if(this.state.description === ''){
       this.setState({descriptionErrorMessage: 'No Description Provided!', descriptionErrorMessageVisible: 'visible'});
@@ -82,18 +75,14 @@ class NewMemory extends Component {
     }
     if(this.state.memoryType===''){
       if(!confirm('Memory Type Not Selected. Defaulting to neutral. Proceed?')) return;
-      else this.setState({ memoryType: 'neu'});
+      else this.setState({ memoryType: '1'});
     }
     this.createNewMemory(orderedDate);
-    console.log('Hello world');
-    
-    //zapodaj transakcje
   }
 
   onTypeChange = (e, { value }) => this.setState({ memoryType: value });
 
   render() {
-    const { value } = this.state
     const descriptionChange = (input) => {
       if(input.length >= 251){
         this.setState({descriptionErrorMessage: 'Description Too Long. Maximum length is 250 characters.', descriptionErrorMessageVisible: 'visible'});
@@ -110,7 +99,6 @@ class NewMemory extends Component {
       <Layout title="Add New Memory" link="/memories/show" linkname="Back">
       <Form onSubmit={this.onSubmit}>
         <Header>Add memory description:</Header>
-        <Header>{this.state.memoryType}</Header>
         <Form.TextArea placeholder="Your memory description" value={this.state.description} onChange={event => descriptionChange(event.target.value)}/>
         <Header>Type of Memory:</Header>
         <Form.Group inline>
@@ -120,10 +108,11 @@ class NewMemory extends Component {
         </Form.Group>
         <Header>Provide date of memory in format DD-MM-YYYY</Header>
         <Form.Input placeholder="DD-MM-YYYY" onChange={event => dateChange(event.target.value)}></Form.Input>
-        <Form.Field control={Button}>Submit</Form.Field>
+        <Button loading={this.state.loading}>Create</Button>
       </Form>
         <Message error header="Ooops! Wrong date!" content={this.state.dateErrorMessage} style={{visibility: this.state.dateErrorMessageVisible}} />
         <Message error header="Ooops! Description Too Long!" content={this.state.descriptionErrorMessage} style={{visibility: this.state.descriptionErrorMessageVisible}} />
+        <Message error header="Ooops! Transaction failed!" content="Out of Gas Maybe?" style={{visibility: this.state.transactionErrorMessageVisible}} />
       </Layout>
     )
   }
