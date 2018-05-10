@@ -16,7 +16,7 @@ class NewMemory extends Component {
     dateErrorMessage: '',
     descriptionErrorMessage: '',
     description: '',
-    memoryType: '',
+    typeOfMemory: '',
     loading: false,
     date: '',
     action: 'Create'
@@ -37,7 +37,7 @@ class NewMemory extends Component {
       from: accounts[0]
     });
 
-    return {index: memoryToModify.index, description: memoryToModify.description, memoryType: memoryToModify.memoryType, date:  memoryToModify.date};
+    return {index: memoryToModify.index, description: memoryToModify.description, typeOfMemory: memoryToModify.typeOfMemory, date:  memoryToModify.date};
     }
 
   checkDateInput = () => {
@@ -82,7 +82,7 @@ class NewMemory extends Component {
 
       const memoriesBank = MemoriesBank(memoriesBankAddress);
 
-      const tx = await memoriesBank.methods.addMemory(orderedDate, this.state.description, this.state.memoryType).send({
+      const tx = await memoriesBank.methods.addMemory(orderedDate, this.state.description, this.state.typeOfMemory).send({
         from: accounts[0]
       });
     } catch (err) {
@@ -100,33 +100,23 @@ class NewMemory extends Component {
       this.setState({descriptionErrorMessage: 'No Description Provided!', descriptionErrorMessageVisible: 'visible'});
       return
     }
-    if(this.state.memoryType===''){
+    if(this.state.typeOfMemory===''){
       if(!confirm('Memory Type Not Selected. Defaulting to neutral. Proceed?')) return;
-      else this.setState({ memoryType: '1'});
+      else this.setState({ typeOfMemory: '1'});
     }
     this.createNewMemory(orderedDate);
   }
 
-  onTypeChange = (e, { value }) => this.setState({ memoryType: value });
+  onTypeChange = (e, { value }) => this.setState({ typeOfMemory: value });
 
   render() {
     if(this.state.action==='Create'){
       if(this.props.index!==undefined){
-        {console.log('before set state')}
-        {console.log(this.state.memoryType)}
-        {console.log(this.state.date)}
         const unorderedDate = this.reverseOrderDate(this.props.date);
-        this.setState({action: 'Modify', description: this.props.description, memoryType: this.props.memoryType, date: unorderedDate})
+        this.setState({action: 'Modify', description: this.props.description, typeOfMemory: this.props.typeOfMemory, date: unorderedDate})
       }
-      {console.log('after set state')}
-      {console.log(this.state.memoryType)}
-      {console.log(this.state.date)}
     }
-    else {
-      {console.log('inside else')}
-      {console.log(this.state.memoryType)}
-      {console.log(this.state.date)}
-    }
+
     const descriptionChange = (input) => {
       if(input.length >= 251){
         this.setState({descriptionErrorMessage: 'Description Too Long. Maximum length is 250 characters.', descriptionErrorMessageVisible: 'visible'});
@@ -144,17 +134,11 @@ class NewMemory extends Component {
       <Form onSubmit={this.onSubmit}>
         <Header>Add memory description:</Header>
         <Form.TextArea placeholder="Your memory description" value={this.state.description} onChange={event => descriptionChange(event.target.value)}/>
-        <Header>Type of Memory: {this.state.memoryType}</Header>
+        <Header>Type of Memory:</Header>
         <Form.Group inline>
-          {console.log('memory type:')}
-          {console.log(this.state.memoryType)}
-          {console.log(this.state.date)}
-          <Form.Radio label='Positive' value='0' checked={this.state.memoryType === ''} onChange={this.onTypeChange} />
-          <Form.Radio label='Neutral' value='1' checked={this.state.memoryType === '1'} onChange={this.onTypeChange} />
-          <Form.Radio label='Negative' value='2' checked={this.state.memoryType === '2'} onChange={this.onTypeChange} />
-          {/* <Form.Field control={Radio} label='Positive' value='0' checked={this.state.memoryType === '0'} onChange={this.onTypeChange} />
-          <Form.Field control={Radio} label='Neutral' value='1' checked={this.state.memoryType === '1'} onChange={this.onTypeChange} />
-          <Form.Field control={Radio} label='Negative' value='2' checked={this.state.memoryType=== '2'} onChange={this.onTypeChange} /> */}
+          <Form.Radio label='Positive' value='0' checked={this.state.typeOfMemory === '0'} onChange={this.onTypeChange} />
+          <Form.Radio label='Neutral' value='1' checked={this.state.typeOfMemory === '1'} onChange={this.onTypeChange} />
+          <Form.Radio label='Negative' value='2' checked={this.state.typeOfMemory === '2'} onChange={this.onTypeChange} />
         </Form.Group>
         <Header>Provide date of memory in format DD-MM-YYYY</Header>
         <Form.Input placeholder="DD-MM-YYYY" value={this.state.date} onChange={event => dateChange(event.target.value)}></Form.Input>
