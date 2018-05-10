@@ -22,14 +22,10 @@ class MemoriesBankIndex extends Component {
     this.setState({ errorMessage: '', errorMessageVisible: 'hidden', accountAddressVisible: 'hidden',  createMessageVisible: 'hidden' });
 
     try {
-      const accounts = await web3.eth.getAccounts();
-
-      console.log('raz');
-      
+      const accounts = await web3.eth.getAccounts();      
       const accountAddress = await factory.methods.getSenderMemoriesBank().call({
         from: accounts[0]
       });
-      console.log('dwa');
       
       if (accountAddress!=='0x0000000000000000000000000000000000000000') {
         this.setState({errorMessage: 'You already have an account. We displayed its address for you below. Click \"Go\" to see your account', 
@@ -37,7 +33,6 @@ class MemoriesBankIndex extends Component {
         errorMessageVisible: 'visible'});
         return
       }
-      console.log('trzy');
 
       this.setState({loading: true});
 
@@ -57,7 +52,7 @@ class MemoriesBankIndex extends Component {
   }
 
   showUserBank = () => {
-    Router.pushRoute('/memories/show')
+    Router.pushRoute('/memories/show');
   }
 
   render() {

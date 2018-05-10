@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Card, Header } from 'semantic-ui-react';
+import { Card, Header, Container, Button } from 'semantic-ui-react';
 import Layout from '../../components/Layout';
 import MemoryCard from '../../components/MemoryCard';
+import { Link, Router } from '../../routes';
 import MemoriesBank from '../../ethereum/memoriesBank';
 import factory from '../../ethereum/factory';
 import web3 from '../../ethereum/web3';
@@ -32,7 +33,6 @@ class MemoriesList extends Component {
     }
 
     return{ 
-      memoriesCount: memoriesCount,
       memoryList: memoryList
     };
   }
@@ -43,8 +43,6 @@ class MemoriesList extends Component {
 
   mapMemoryToMemoryCard(memory) {
     const formattedDate = this.formatDate(memory.date);
-    console.log(formattedDate);
-
     const mappedMemory =
       {
         index: memory.index,
@@ -52,7 +50,7 @@ class MemoriesList extends Component {
         description: memory.description,
         typeOfMemory: memory.typeOfMemory
       }
-      return <MemoryCard memory={mappedMemory} />;
+      return <MemoryCard key={memory.index} memory={mappedMemory} />;
     }
 
   renderListOfMemories(memoryList) {
@@ -72,12 +70,28 @@ class MemoriesList extends Component {
     return 0;
   }
 
+  reloadPage() {
+    console.log('hello');
+    Router.pushRoute('/memories/show');
+  }
+
   render() {
     const memoryList = this.props.memoryList;
-    console.log(memoryList);
+    const renderMemories = () => {
+      if(memoryList[0]===undefined){
+        return <Container textAlign='center'>
+                <Header>Your Memories Bank is empty</Header>
+                <Link route='/memories/new'>
+                  <a className="item">Add new memory</a>
+                </Link>
+              </Container>
+      }
+      return this.renderListOfMemories(memoryList);
+    }
     return (
       <Layout title="Your Memories" link="/memories/new" linkname="Add New Memory">
-        {this.renderListOfMemories(memoryList)}
+        {renderMemories()}
+        <Button primary fluid onClick={this.reloadPage}>Refresh page</Button>
       </Layout>
     )
   }
