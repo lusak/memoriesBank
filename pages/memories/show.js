@@ -26,10 +26,12 @@ class MemoriesList extends Component {
     let singleMemory;
 
     for(let i=0; i < memoriesCount; i++){
-    singleMemory = await memoriesBank.methods.memories(i).call({
-      from: accounts[0]
-    });
-    memoryList.push(singleMemory);
+      singleMemory = await memoriesBank.methods.memories(i).call({
+        from: accounts[0]
+      });
+      if(!(singleMemory.date === '0')){
+        memoryList.push(singleMemory);
+      }
     }
 
     return{ 
@@ -50,7 +52,7 @@ class MemoriesList extends Component {
         description: memory.description,
         typeOfMemory: memory.typeOfMemory
       }
-      return <MemoryCard key={memory.index} memory={mappedMemory} />;
+      return <MemoryCard key={memory.index} memory={mappedMemory}/>;
     }
 
   renderListOfMemories(memoryList) {
@@ -71,7 +73,6 @@ class MemoriesList extends Component {
   }
 
   reloadPage() {
-    console.log('hello');
     Router.pushRoute('/memories/show');
   }
 
@@ -91,7 +92,7 @@ class MemoriesList extends Component {
     return (
       <Layout title="Your Memories" link="/memories/new" linkname="Add New Memory">
         {renderMemories()}
-        <Button primary fluid onClick={this.reloadPage}>Refresh page</Button>
+        <Button primary onClick={this.reloadPage}>Refresh page</Button>
       </Layout>
     )
   }

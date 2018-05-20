@@ -19,7 +19,8 @@ class NewMemory extends Component {
     typeOfMemory: '',
     loading: false,
     date: '',
-    action: 'Create'
+    action: 'Create',
+    index: ''
   }
 
   static async getInitialProps(props) {
@@ -82,7 +83,7 @@ class NewMemory extends Component {
 
       const memoriesBank = MemoriesBank(memoriesBankAddress);
 
-      const tx = await memoriesBank.methods.addMemory(orderedDate, this.state.description, this.state.typeOfMemory).send({
+      await memoriesBank.methods.addMemory(orderedDate, this.state.description, this.state.typeOfMemory).send({
         from: accounts[0]
       });
     } catch (err) {
@@ -91,6 +92,27 @@ class NewMemory extends Component {
     this.setState({ loading: false });
     Router.pushRoute('/memories/show');
   } 
+
+  modifyMemory = async (orderedDate) => {
+    this.setState({ loading: true });
+
+    try {
+      const accounts = await web3.eth.getAccounts();
+      const memoriesBankAddress = await factory.methods.getSenderMemoriesBank().call({
+        from: accounts[0]
+      });
+
+      const memoriesBank = MemoriesBank(memoriesBankAddress);
+
+      await memoriesBank.methods.modifyMemory(this.state.index, orderedDate, this.state.description, this.state.typeOfMemory).send({
+        from: accounts[0]
+      });
+    } catch (err) {
+      this.setState({transactionErrorMessageVisible: 'visible'});
+    }
+    this.setState({ loading: false });
+    Router.pushRoute('/memories/show');
+  }
 
   onSubmit = () => {
     this.setState({transactionErrorMessageVisible: 'hidden'});
@@ -104,7 +126,11 @@ class NewMemory extends Component {
       if(!confirm('Memory Type Not Selected. Defaulting to neutral. Proceed?')) return;
       else this.setState({ typeOfMemory: '1'});
     }
-    this.createNewMemory(orderedDate);
+    if(this.props.index === undefined) {
+      this.createNewMemory(orderedDate);
+    } else {
+      this.modifyMemory(orderedDate);
+    }
   }
 
   onTypeChange = (e, { value }) => this.setState({ typeOfMemory: value });
@@ -113,7 +139,7 @@ class NewMemory extends Component {
     if(this.state.action==='Create'){
       if(this.props.index!==undefined){
         const unorderedDate = this.reverseOrderDate(this.props.date);
-        this.setState({action: 'Modify', description: this.props.description, typeOfMemory: this.props.typeOfMemory, date: unorderedDate})
+        this.setState({action: 'Modify', index: this.props.index, description: this.props.description, typeOfMemory: this.props.typeOfMemory, date: unorderedDate})
       }
     }
 

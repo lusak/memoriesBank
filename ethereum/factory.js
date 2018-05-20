@@ -4,9 +4,7 @@ import MemoriesBankFactory from './build/MemoriesBankFactory.json';
 const instance = new web3.eth.Contract(
   JSON.parse(MemoriesBankFactory.interface),
   // Rinkeby
-  // '0xaa556bd8b2bd62da8a3c5e3b411cf54436c3bdf1'
-  // GanacheLocal
-  '0x8cdaf0cd259887258bc13a92c0a6da92698644c0'
+  '0xce4e98effeba3f7c601d342502671c52e2348898'
 );
 
 export default instance;
